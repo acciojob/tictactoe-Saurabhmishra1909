@@ -38,8 +38,10 @@ function handleMove(event) {
     gameState.board[cellIndex] = gameState.currentPlayer;
     cell.textContent = gameState.currentPlayer;
 
-    if (checkWinner()) {
-        updateMessage(`${gameState.currentPlayer === "x" ? gameState.player1 : gameState.player2}, congratulations you won!`);
+    const winner = checkWinner();
+    if (winner) {
+        const winningPlayer = winner === "x" ? gameState.player1 : gameState.player2;
+        updateMessage(`${winningPlayer}, congratulations you won!`);
         gameState.active = false;
         return;
     }
@@ -61,9 +63,12 @@ function checkWinner() {
         [0, 4, 8], [2, 4, 6]
     ];
 
-    return winPatterns.some(([a, b, c]) => 
-        gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]
-    );
+    for (const [a, b, c] of winPatterns) {
+        if (gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]) {
+            return gameState.board[a]; // Return the winning player ("x" or "o")
+        }
+    }
+    return null; // No winner
 }
 
 function resetBoard() {
@@ -79,3 +84,9 @@ function updateMessage(text) {
 }
 
 boardElement.addEventListener("click", handleMove);
+
+// Attach event listener to the form
+document.getElementById("submit").addEventListener("click", function (event) {
+    event.preventDefault(); // Prevent form submission
+    startGame(); // Initialize the game
+});
