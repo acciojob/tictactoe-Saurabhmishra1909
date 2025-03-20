@@ -1,87 +1,80 @@
-//your JS code here. If required.
-let player1, player2;
-let currentPlayer;
-let board;
-let gameActive;
+let gameState = {
+    player1: "",
+    player2: "",
+    currentPlayer: "x",
+    board: Array(9).fill(""),
+    active: false
+};
 
-// Initialize the game
-function initializeGame() {
-  player1 = document.getElementById('player-1').value;
-  player2 = document.getElementById('player-2').value;
-  currentPlayer = player1;
-  board = ['', '', '', '', '', '', '', '', ''];
-  gameActive = true;
+const playerInput = document.querySelector(".player-input");
+const gameContainer = document.querySelector(".game-container");
+const message = document.querySelector(".message");
+const boardElement = document.querySelector(".board");
+const cells = document.querySelectorAll(".cell");
 
-  // Hide the form and show the game board
-  document.getElementById('form-container').style.display = 'none';
-  document.getElementById('game-container').style.display = 'block';
+function startGame() {
+    gameState.player1 = document.getElementById("player1").value.trim();
+    gameState.player2 = document.getElementById("player2").value.trim();
 
-  // Update the message
-  updateMessage(`${currentPlayer}, you're up!`);
-
-  // Add event listeners to cells
-  document.querySelectorAll('.cell').forEach(cell => {
-    cell.addEventListener('click', handleCellClick);
-  });
-}
-
-// Handle cell click
-function handleCellClick(event) {
-  const cell = event.target;
-  const cellId = cell.id - 1; // Convert id to index (0-8)
-
-  // Check if the cell is already occupied or the game is over
-  if (board[cellId] !== '' || !gameActive) {
-    return;
-  }
-
-  // Update the board and cell
-  board[cellId] = currentPlayer === player1 ? 'X' : 'O';
-  cell.textContent = board[cellId];
-
-  // Check for a winner
-  if (checkWin()) {
-    updateMessage(`${currentPlayer}, congratulations! You won!`);
-    gameActive = false;
-    return;
-  }
-
-  // Check for a draw
-  if (board.every(cell => cell !== '')) {
-    updateMessage(`It's a draw!`);
-    gameActive = false;
-    return;
-  }
-
-  // Switch players
-  currentPlayer = currentPlayer === player1 ? player2 : player1;
-  updateMessage(`${currentPlayer}, you're up!`);
-}
-
-// Check for a winning condition
-function checkWin() {
-  const winningCombinations = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-    [0, 4, 8], [2, 4, 6]             // Diagonals
-  ];
-
-  for (const combination of winningCombinations) {
-    const [a, b, c] = combination;
-    if (board[a] !== '' && board[a] === board[b] && board[a] === board[c]) {
-      return true;
+    if (!gameState.player1 || !gameState.player2) {
+        alert("Please enter both player names.");
+        return;
     }
-  }
-  return false;
+
+    playerInput.style.display = "none";
+    gameContainer.style.display = "block";
+
+    resetBoard();
+    updateMessage(`${gameState.player1}, you're up`);
+    gameState.active = true;
 }
 
-// Update the message
-function updateMessage(message) {
-  document.querySelector('.message').textContent = message;
+function handleMove(event) {
+    let cell = event.target;
+    let cellIndex = parseInt(cell.id) - 1;
+
+    if (!gameState.active || gameState.board[cellIndex]) return;
+
+    gameState.board[cellIndex] = gameState.currentPlayer;
+    cell.textContent = gameState.currentPlayer;
+
+    if (checkWinner()) {
+        updateMessage(`${gameState.currentPlayer === "x" ? gameState.player1 : gameState.player2}, congratulations you won!`);
+        gameState.active = false;
+        return;
+    }
+
+    if (!gameState.board.includes("")) {
+        updateMessage("It's a Draw!");
+        gameState.active = false;
+        return;
+    }
+
+    gameState.currentPlayer = gameState.currentPlayer === "x" ? "o" : "x";
+    updateMessage(`${gameState.currentPlayer === "x" ? gameState.player1 : gameState.player2}, you're up!`);
 }
 
-// Attach event listener to the form
-document.getElementById('player-form').addEventListener('submit', function (event) {
-  event.preventDefault(); // Prevent form submission
-  initializeGame(); // Initialize the game
-});
+function checkWinner() {
+    const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+        [0, 4, 8], [2, 4, 6]
+    ];
+
+    return winPatterns.some(([a, b, c]) => 
+        gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]
+    );
+}
+function resetBoard() {
+    gameState.board.fill("");
+    gameState.currentPlayer = "x";
+    gameState.active = true;
+
+    cells.forEach(cell => cell.textContent = "");
+}
+
+function updateMessage(text) {
+    message.textContent = text;
+}
+
+boardElement.addEventListener("click", handleMove);
