@@ -65,6 +65,7 @@ function checkWinner() {
         gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]
     );
 }
+
 function resetBoard() {
     gameState.board.fill("");
     gameState.currentPlayer = "x";
